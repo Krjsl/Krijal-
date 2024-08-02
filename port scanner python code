@@ -1,0 +1,67 @@
+import socket
+from concurrent.futures import ThreadPoolExecutor
+
+def scan_port(ip, port, aggressive, verbose):
+    """
+    Scans a single port on a given IP address.
+    """
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex((ip, port))
+        sock.close()
+
+        if result == 0:
+            service_info = detect_service(ip, port) if aggressive else None
+            if verbose >= 1:
+                print(f"Port {port}: Open")
+            if aggressive and verbose >= 1:
+                print(f"Service on port {port}: {service_info}")
+            return port, True
+        else:
+            if verbose >= 2:
+                print(f"Port {port}: Closed")
+            return port, False
+    except Exception as e:
+        if verbose >= 2:
+            print(f"Error scanning port {port}: {e}")
+        return port, False
+
+def detect_service(ip, port):
+    """
+    Placeholder function to simulate service detection.
+    Implement real service detection logic here.
+    """
+    return "Simulated Service Info"
+
+def scan_ports(ip, ports, aggressive=False, verbose=0):
+    """
+    Scans a range of ports on a given IP address.
+    """
+    open_ports = []
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        future_to_port = {executor.submit(scan_port, ip, port, aggressive, verbose): port for port in ports}
+        for future in future_to_port:
+            port, is_open = future.result()
+            if is_open:
+                open_ports.append(port)
+    return open_ports
+
+def main():
+    ip = input("Enter the IP address to scan: ")
+    aggressive = input("Enable aggressive scan? (yes/no): ").strip().lower() == 'yes'
+    verbosity_input = input("Select verbosity level (0 for none, 1 for some, 2 for detailed): ").strip()
+    verbose = int(verbosity_input) if verbosity_input.isdigit() else 0
+    ports = range(1, 1024)  # Scan ports 1 to 1023
+
+    print(f"Scanning {ip} for open ports in range 1-1023 with {'aggressive' if aggressive else 'normal'} scanning and verbosity level {verbose}...")
+    open_ports = scan_ports(ip, ports, aggressive, verbose)
+    
+    if open_ports:
+        print(f"Open ports on {ip}: {open_ports}")
+    else:
+        print(f"No open ports found on {ip}.")
+
+if __name__ == "__main__":
+    main()
+ what this code do provide me title for github i am gonna post it there 
